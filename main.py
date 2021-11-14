@@ -45,7 +45,7 @@ if __name__ == '__main__':
         data = data[args.start-1:]
         if args.end > 0:
             data = data[:args.end - args.start]
-    table = ' '.join([str(elem) for elem in data])
+    table = ''.join([str(e) for e in data])
         
     b = BooleanLogic(table, args.letter, args.lines)
     if args.text:
