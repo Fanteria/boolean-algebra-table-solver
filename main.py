@@ -38,8 +38,16 @@ if __name__ == '__main__':
     parser.add_argument("-l", "--lines", default=1, type=int)
     args = parser.parse_args()
 
-    b = BooleanLogic(table, args.letter, args.lines)
 
+    with open(args.file, 'r') as f:
+        data = f.readlines()
+    if args.start > 0:
+        data = data[args.start-1:]
+        if args.end > 0:
+            data = data[:args.end - args.start]
+    table = ' '.join([str(elem) for elem in data])
+        
+    b = BooleanLogic(table, args.letter, args.lines)
     if args.text:
         BooleanLogic.texOutput = False
         
