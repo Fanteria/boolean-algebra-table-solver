@@ -43,14 +43,62 @@ class BooleanLogic:
         for i in range(bonusLines + 1):
             del lines[0]
 
+        # Process lines and save to output variables
         inputs = [None] * len(self.inVars)
         for line in lines:
             cells = BooleanLogic._lineToArray(line)
             for i in range(len(self.inVars)):
                 inputs[i] = cells[i]
-            number = BooleanLogic._BoolArrayToNumber(inputs)
             for i in range(len(self.inVars)-1, len(self.outVars) + len(self.inVars)):
                 if cells[i].strip() == '1':
-                   self.outVars[i-len(self.inVars)][1].append(number)
+                   self.outVars[i-len(self.inVars)][1].append(copy.deepcopy(inputs))
         print(self.outVars)
         print(self.inVars)
+
+    def getMinimal(self) -> str:
+        X = ttvars('x', len(self.inVars))
+        ret = ""
+        for i in range(len(self.outVars)):
+            ret += self.outVars[i][0] + " "
+            arrayAsString = ""
+            for j in self.outTable[i]:
+                arrayAsString += j
+            ret += self.pyedaToTex(str(espresso_tts(truthtable(X, arrayAsString))[0]))
+            ret += "\n"
+        return ret
+
+    def getUnminimalised(self) -> str:
+        ret = ""
+        for i in self.outVars:
+            ret += "| "
+            ret += i[0]
+            ret += " | $"
+            for j in i[1]:
+                ret += self.getTex(j)
+                ret += " + "
+            ret = ret[:-3] + "$ |\n"
+        return ret
+        
+    def pyedaToTex(self, s: str) -> str:
+        s = s.replace("Or", "")
+        s = s.replace("And", "")
+        s = s.replace(",", "")
+        s = s.replace(") (", "+")
+        s = s.replace("((", "")
+        s = s.replace("))", "")
+        s = s.replace(" ", "")
+        for i in range(len(self.inVars)):
+            s = s.replace("x[" + str(i) + "]", self.inVars[i])
+        for i in range(len(self.inVars)):
+            s = s.replace("~" + self.inVars[i], "\\bar{" + self.inVars[i] + "}")
+        s = s.replace("+", " + ")
+        return "$" + s + "$"
+
+    def getTex(self, arr: list) -> str:
+        ret = ""
+        for i in range(len(arr)):
+            if arr[i] == '1':
+                ret += self.inVars[i]
+            else:
+                ret += "\\bar{" + self.inVars[i] + "}"
+        return ret
