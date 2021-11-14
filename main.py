@@ -19,7 +19,8 @@ if __name__ == '__main__':
 
 
     with open(args.file, 'r') as f:
-        data = f.readlines()
+        fileText = f.readlines()
+        data = fileText
     if args.start > 0:
         data = data[args.start-1:]
         if args.end > 0:
@@ -43,4 +44,6 @@ if __name__ == '__main__':
     if args.print:
         print(out)
     if args.append:
-        print("append")
+        fileText[args.end - 1] += '\n' + out
+        with open(args.file, 'w') as f:
+            f.writelines(fileText)
