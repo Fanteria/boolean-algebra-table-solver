@@ -55,17 +55,16 @@ class BooleanLogic:
                 if cells[i].strip() == '1':
                    outVarsTable[i-len(self.inVars)][1].append(copy.deepcopy(inputs))
         self.outVars = dict((x, y) for x, y in outVarsTable)
-        for i in self.outVars:
-            print(i + " | " + str(self.outVars[i]))
 
-    def getUnminimalisedAll(self) -> str:
+    def getLine(self, outVar: str, outVarFunction) -> str:
+        return "| " + outVar + " | " + outVarFunction(outVar) + " |\n"
+    
+    def getAll(self, minimal: bool = True):
         ret = ""
+        func = self.getMinimal if minimal else self.getUnminimalised
         for i in self.outVars:
-            ret += self.getUnminimalisedLine(i)
+            ret += self.getLine(i, func) 
         return ret
-
-    def getUnminimalisedLine(self, outVar: str) -> str:
-        return "| " + outVar + " | " + self.getUnminimalised(outVar) + " |\n"
 
     def getUnminimalised(self, outVar: str) -> str:
         ret = ""
@@ -78,24 +77,24 @@ class BooleanLogic:
         if self.texOutput:
             ret += "$"
         return ret
-
-    def getMinimal(self) -> str:
+    
+    def getMinimal(self, outVar: str) -> str:
         # Create input variables for minimalization
         X = ttvars('x', len(self.inVars))
 
         # Create string of output values
         trueNumbers = []
-        #for i in self.outVars
-
-        ret = ""
-        for i in range(len(self.outVars)):
-            ret += self.outVars[i][0] + " "
-            arrayAsString = ""
-            for j in self.outTable[i]:
-                arrayAsString += j
-            ret += self._pyedaToTex(str(espresso_tts(truthtable(X, arrayAsString))[0]))
-            ret += "\n"
-        return ret
+        for i in self.outVars[outVar]:
+            trueNumbers.append(BooleanLogic._BoolArrayToNumber(i))
+        # if all is zero
+        trueNumbers.sort()
+        arrayAsString = ""
+        for i in range(0, len(self.inVars) * len(self.inVars)):
+            if i in trueNumbers:
+                arrayAsString += "1"
+            else:
+                arrayAsString += "0"
+        return self._pyedaToTex(str(espresso_tts(truthtable(X, arrayAsString))[0]))
         
     def _pyedaToTex(self, s: str) -> str:
         s = s.replace("Or", "")
@@ -107,10 +106,13 @@ class BooleanLogic:
         s = s.replace(" ", "")
         for i in range(len(self.inVars)):
             s = s.replace("x[" + str(i) + "]", self.inVars[i])
-        for i in range(len(self.inVars)):
-            s = s.replace("~" + self.inVars[i], "\\bar{" + self.inVars[i] + "}")
+        if self.texOutput:
+            for i in range(len(self.inVars)):
+                s = s.replace("~" + self.inVars[i], "\\bar{" + self.inVars[i] + "}")
         s = s.replace("+", " + ")
-        return "$" + s + "$"
+        if self.texOutput:
+            return "$" + s + "$"
+        return s
 
     def _getProductFromArray(self, arr: list) -> str:
         ret = ""
@@ -121,5 +123,5 @@ class BooleanLogic:
                 if self.texOutput:
                     ret += "\\bar{" + self.inVars[i] + "}"
                 else:
-                    ret += 'n' + self.inVars[i]
+                    ret += '~' + self.inVars[i]
         return ret
