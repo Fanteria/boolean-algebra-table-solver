@@ -51,15 +51,12 @@ class BooleanLogic:
             cells = BooleanLogic._lineToArray(line)
             for i in range(len(self.inVars)):
                 inputs[i] = cells[i]
-            for i in range(len(self.inVars)-1, len(outVarsTable) + len(self.inVars)):
+            for i in range(len(self.inVars), len(outVarsTable) + len(self.inVars)):
                 if cells[i].strip() == '1':
                    outVarsTable[i-len(self.inVars)][1].append(copy.deepcopy(inputs))
-        print(outVarsTable)
-        print("-------------------------------------------")
         self.outVars = dict((x, y) for x, y in outVarsTable)
-        print(self.outVars)
-        print("-------------------------------------------")
-        print(self.inVars)
+        for i in self.outVars:
+            print(i + " | " + str(self.outVars[i]))
 
     def getUnminimalisedAll(self) -> str:
         ret = ""
