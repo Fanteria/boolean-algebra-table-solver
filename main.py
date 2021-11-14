@@ -1,0 +1,59 @@
+#!/bin/python
+
+import argparse
+from BooleanLogic import BooleanLogic
+
+table = '''
+|  v  |  w  |  x  |  y  |     | A  |  B  |  C  |  D  |  E  |  F  |  G  |
+| :-: | :-: | :-: | :-: | :-: | -: | :-: | :-: | :-: | :-: | :-: | :-: |
+|  0  |  0  |  0  |  0  |     | 0  |  0  |  0  |  0  |  0  |  0  |  1  |
+|  0  |  0  |  0  |  1  |     | 1  |  0  |  0  |  1  |  1  |  1  |  1  |
+|  0  |  0  |  1  |  0  |     | 0  |  0  |  1  |  0  |  0  |  1  |  0  |
+|  0  |  0  |  1  |  1  |     | 0  |  0  |  0  |  0  |  1  |  1  |  0  |
+|  0  |  1  |  0  |  0  |     | 1  |  0  |  0  |  1  |  1  |  0  |  0  |
+|  0  |  1  |  0  |  1  |     | 0  |  1  |  0  |  0  |  1  |  0  |  0  |
+|  0  |  1  |  1  |  0  |     | 0  |  1  |  0  |  0  |  0  |  0  |  0  |
+|  0  |  1  |  1  |  1  |     | 0  |  0  |  0  |  1  |  1  |  1  |  1  |
+|  1  |  0  |  0  |  0  |     | 0  |  0  |  0  |  0  |  0  |  0  |  0  |
+|  1  |  0  |  0  |  1  |     | 0  |  0  |  0  |  0  |  1  |  0  |  0  |
+|  1  |  0  |  1  |  0  |     | 0  |  0  |  0  |  1  |  0  |  0  |  0  |
+|  1  |  0  |  1  |  1  |     | 1  |  1  |  0  |  0  |  0  |  0  |  0  |
+|  1  |  1  |  0  |  0  |     | 0  |  1  |  1  |  0  |  0  |  0  |  1  |
+|  1  |  1  |  0  |  1  |     | 1  |  0  |  0  |  0  |  0  |  1  |  0  |
+|  1  |  1  |  1  |  0  |     | 0  |  1  |  1  |  0  |  0  |  0  |  0  |
+|  1  |  1  |  1  |  1  |     | 0  |  1  |  1  |  1  |  0  |  0  |  0  |
+'''
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("file", type=str)
+    parser.add_argument("letter", type=str)
+    parser.add_argument("start", nargs='?', default=-1, type=int)
+    parser.add_argument("end", nargs='?', default=-1, type=int)
+    parser.add_argument("-t", "--text", action='store_true')
+    parser.add_argument("-m", "--minimized", action='store_true')
+    parser.add_argument("-u", "--unminimized", action='store_true')
+    parser.add_argument("-p", "--print", action='store_true')
+    parser.add_argument("-a", "--append", action='store_true')
+    parser.add_argument("-l", "--lines", default=1, type=int)
+    args = parser.parse_args()
+
+    b = BooleanLogic(table, args.letter, args.lines)
+
+    if args.text:
+        BooleanLogic.texOutput = False
+        
+    out = ""
+    if not args.minimized and not args.unminimized:
+        out = b.getAll()
+    if args.minimized:
+        out += b.getAll(True)
+    if args.unminimized:
+        out += b.getAll(False)
+
+    if not args.print and not args.append:
+        print(out)
+    if args.print:
+        print(out)
+    if args.append:
+        print("append")
