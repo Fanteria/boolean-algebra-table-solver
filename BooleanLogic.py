@@ -3,10 +3,11 @@ import copy
 from pyeda.inter import *
 
 class BooleanLogic:
+    texOutput: bool = True
+
     def __init__(self, table: str, letter: str, bonusLines: int = 1) -> None:
         self.inVars = []
-        self.outVars = []
-        self.outTable = []
+        self.outVars = {}
         self.processLines(table, letter, bonusLines)
 
     @staticmethod
@@ -27,6 +28,7 @@ class BooleanLogic:
         # Remove empty lines in table
         lines = [s for s in table.splitlines() if s]
         end = False
+        outVarsTable = []
 
         # Read line with variables
         BooleanLogic._lineToArray(lines[0])
@@ -34,7 +36,7 @@ class BooleanLogic:
             if not end:
                 self.inVars.append(i)
             else:
-                self.outVars.append((i, []))
+                outVarsTable.append((i, []))
                 continue
             if i == lastIn:
                 end = True
@@ -49,37 +51,56 @@ class BooleanLogic:
             cells = BooleanLogic._lineToArray(line)
             for i in range(len(self.inVars)):
                 inputs[i] = cells[i]
-            for i in range(len(self.inVars)-1, len(self.outVars) + len(self.inVars)):
+            for i in range(len(self.inVars)-1, len(outVarsTable) + len(self.inVars)):
                 if cells[i].strip() == '1':
-                   self.outVars[i-len(self.inVars)][1].append(copy.deepcopy(inputs))
+                   outVarsTable[i-len(self.inVars)][1].append(copy.deepcopy(inputs))
+        print(outVarsTable)
+        print("-------------------------------------------")
+        self.outVars = dict((x, y) for x, y in outVarsTable)
         print(self.outVars)
+        print("-------------------------------------------")
         print(self.inVars)
 
+    def getUnminimalisedAll(self) -> str:
+        ret = ""
+        for i in self.outVars:
+            ret += self.getUnminimalisedLine(i)
+        return ret
+
+    def getUnminimalisedLine(self, outVar: str) -> str:
+        return "| " + outVar + " | " + self.getUnminimalised(outVar) + " |\n"
+
+    def getUnminimalised(self, outVar: str) -> str:
+        ret = ""
+        if self.texOutput:
+            ret += "$"
+        for i in self.outVars[outVar]:
+            ret += self._getProductFromArray(i)
+            ret += " + "
+        ret = ret[:-3]
+        if self.texOutput:
+            ret += "$"
+        return ret
+
     def getMinimal(self) -> str:
+        # Create input variables for minimalization
         X = ttvars('x', len(self.inVars))
+
+        # Create string of output values
+        trueNumbers = []
+        #for i in self.outVars
+
         ret = ""
         for i in range(len(self.outVars)):
             ret += self.outVars[i][0] + " "
             arrayAsString = ""
             for j in self.outTable[i]:
                 arrayAsString += j
-            ret += self.pyedaToTex(str(espresso_tts(truthtable(X, arrayAsString))[0]))
+            ret += self._pyedaToTex(str(espresso_tts(truthtable(X, arrayAsString))[0]))
             ret += "\n"
         return ret
-
-    def getUnminimalised(self) -> str:
-        ret = ""
-        for i in self.outVars:
-            ret += "| "
-            ret += i[0]
-            ret += " | $"
-            for j in i[1]:
-                ret += self.getTex(j)
-                ret += " + "
-            ret = ret[:-3] + "$ |\n"
-        return ret
         
-    def pyedaToTex(self, s: str) -> str:
+    def _pyedaToTex(self, s: str) -> str:
         s = s.replace("Or", "")
         s = s.replace("And", "")
         s = s.replace(",", "")
@@ -94,11 +115,14 @@ class BooleanLogic:
         s = s.replace("+", " + ")
         return "$" + s + "$"
 
-    def getTex(self, arr: list) -> str:
+    def _getProductFromArray(self, arr: list) -> str:
         ret = ""
         for i in range(len(arr)):
             if arr[i] == '1':
                 ret += self.inVars[i]
             else:
-                ret += "\\bar{" + self.inVars[i] + "}"
+                if self.texOutput:
+                    ret += "\\bar{" + self.inVars[i] + "}"
+                else:
+                    ret += 'n' + self.inVars[i]
         return ret
