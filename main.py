@@ -50,11 +50,11 @@ if __name__ == '__main__':
     if args.unminimized:
         out += b.getAll(False)
 
-    if not args.print and not args.append:
+    if not args.print and not args.insert:
         print(out)
     if args.print:
         print(out)
-    if args.append:
+    if args.insert:
         fileText[args.end - 1] += '\n' + out
         with open(args.file, 'w') as f:
             f.writelines(fileText)
