@@ -35,9 +35,9 @@ if __name__ == '__main__':
     if args.start > 0:
         data = data[args.start-1:]
         if args.end > 0:
-            data = data[:args.end - args.start]
+            data = data[:args.end - args.start + 1]
     table = ''.join([str(e) for e in data])
-        
+
     b = BooleanLogic(table, args.letter, args.lines)
     if args.text:
         BooleanLogic.texOutput = False
@@ -55,6 +55,9 @@ if __name__ == '__main__':
     if args.print:
         print(out)
     if args.insert:
-        fileText[args.end - 1] += '\n' + out
+        if (args.end < 0 or len(fileText) >= args.end):
+            fileText.append('\n' + out)
+        else:
+            fileText[args.end] += '\n' + out
         with open(args.file, 'w') as f:
             f.writelines(fileText)
